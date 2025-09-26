@@ -1,0 +1,12 @@
+server:
+  name: memo-assistant
+  addr: 0.0.0.0:9000
+
+ollama:
+  url: http://localhost:11434
+  model: deepseek-r1:14b
+
+weaviate:
+  host: localhost:8080
+  schema: http
+  class: TextData
