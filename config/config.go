@@ -1,9 +1,11 @@
 package config
 
 import (
+	"os"
+	"sync"
+
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
-	"sync"
 )
 
 var once sync.Once
@@ -43,14 +45,23 @@ func Init(filename string) {
 				Addr: viper.GetString("server.addr"),
 			},
 			DouBao: DouBao{
-				ApiKey: viper.GetString("doubao.apiKey"),
+				ApiKey: firstNonEmpty(os.Getenv("DOUBAO_API_KEY"), viper.GetString("doubao.apiKey")),
 			},
 			Weaviate: Weaviate{
-				Host:   viper.GetString("weaviate.host"),
+				Host:   firstNonEmpty(os.Getenv("WEAVIATE_HOST"), viper.GetString("weaviate.host")),
 				Schema: viper.GetString("weaviate.schema"),
 				Class:  viper.GetString("weaviate.class"),
 			},
 		}
 		logrus.Infof("init Cfg: %+v", Cfg)
 	})
+}
+
+func firstNonEmpty(values ...string) string {
+	for _, v := range values {
+		if v != "" {
+			return v
+		}
+	}
+	return ""
 }

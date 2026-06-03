@@ -1,0 +1,34 @@
+services:
+  weaviate:
+    image: cr.weaviate.io/semitechnologies/weaviate:1.32.9
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+      - "50051:50051"
+    environment:
+      AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED: "true"
+      PERSISTENCE_DATA_PATH: /var/lib/weaviate
+    volumes:
+      - weaviate_data:/var/lib/weaviate
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/v1/.well-known/ready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  memo-assistant:
+    image: stonejianbu/memo-assistant:v1.0.0
+    restart: unless-stopped
+    ports:
+      - "9000:9000"
+    environment:
+      - DOUBAO_API_KEY=${DOUBAO_API_KEY}
+      - WEAVIATE_HOST=weaviate:8080
+    volumes:
+      - ./config/config.yaml:/app/config.yaml
+    depends_on:
+      weaviate:
+        condition: service_healthy
+
+volumes:
+  weaviate_data:
