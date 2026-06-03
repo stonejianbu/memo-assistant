@@ -14,9 +14,8 @@ type Server struct {
 	Addr string `json:"addr"`
 }
 
-type Ollama struct {
-	Url   string `json:"url"`
-	Model string `json:"model"`
+type DouBao struct {
+	ApiKey string
 }
 
 type Weaviate struct {
@@ -27,7 +26,7 @@ type Weaviate struct {
 
 type Config struct {
 	Server   Server   `json:"server"`
-	Ollama   Ollama   `json:"ollama"`
+	DouBao   DouBao   `json:"doubao"`
 	Weaviate Weaviate `json:"weaviate"`
 }
 
@@ -43,9 +42,8 @@ func Init(filename string) {
 				Name: viper.GetString("server.name"),
 				Addr: viper.GetString("server.addr"),
 			},
-			Ollama: Ollama{
-				Url:   viper.GetString("ollama.url"),
-				Model: viper.GetString("ollama.model"),
+			DouBao: DouBao{
+				ApiKey: viper.GetString("doubao.apiKey"),
 			},
 			Weaviate: Weaviate{
 				Host:   viper.GetString("weaviate.host"),

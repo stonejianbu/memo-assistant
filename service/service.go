@@ -2,7 +2,8 @@ package service
 
 import (
 	"github.com/stonejianbu/memo-assistant/config"
-	"github.com/stonejianbu/memo-assistant/pkg/llm"
+	"github.com/stonejianbu/memo-assistant/pkg/llm/impl"
+	"os"
 	"sync"
 )
 
@@ -17,7 +18,11 @@ type Services struct {
 func Init() {
 	once.Do(func() {
 		Srv = &Services{}
-		llmClient := llm.NewOllamaManager(config.Cfg.Ollama.Model, config.Cfg.Ollama.Url)
+		apiKey := config.Cfg.DouBao.ApiKey
+		if len(apiKey) < 5 {
+			apiKey = os.Getenv("API_KEY")
+		}
+		llmClient := impl.NewDouBao(apiKey)
 		Srv.TextManger = NewTextManager(llmClient)
 	})
 
