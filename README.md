@@ -69,9 +69,33 @@ make run
 
 ---
 
-## 使用示例
+## 使用方式
 
-### 记忆训练
+### Web界面（推荐）
+
+打开浏览器访问 `static/index.html`，通过可视化界面操作：
+
+```shell
+# 方式一：直接打开文件
+open static/index.html
+
+# 方式二：使用HTTP服务器（推荐，避免CORS问题）
+python3 -m http.server 8000
+# 然后访问 http://localhost:8000/static/index.html
+```
+
+**功能特性：**
+- 📝 **训练记忆**：输入文本内容训练到知识库（支持 Ctrl+Enter 提交）
+- 🔍 **搜索记忆**：输入问题搜索相关记忆（支持 Enter 搜索）
+- 🎨 **Markdown显示**：搜索结果支持Markdown格式渲染
+- 📦 **可折叠结果**：点击结果标题栏展开/收缩内容
+- ⚙️ **API配置**：可自定义API地址
+
+---
+
+### API接口
+
+#### 记忆训练
 
 ```shell
 curl -X POST http://127.0.0.1:9000/api/v1/train \
@@ -83,7 +107,7 @@ curl -X POST http://127.0.0.1:9000/api/v1/train \
   }'
 ```
 
-### 搜索记忆
+#### 搜索记忆
 
 ```shell
 curl -X POST http://127.0.0.1:9000/api/v1/generate \
@@ -91,6 +115,15 @@ curl -X POST http://127.0.0.1:9000/api/v1/generate \
   --data-raw '{
     "prompt": "谁是你的主人"
   }'
+```
+
+响应格式：
+
+```json
+{
+  "code": 200,
+  "data": "{\"answer\":\"根据记忆，你的主人是石头\"}"
+}
 ```
 
 ---

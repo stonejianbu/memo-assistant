@@ -12,7 +12,7 @@ import (
 )
 
 var SystemPromptTemplate = `
-请回答用户问题，优先基于Context内容来回答，如果Context为空或者无匹配，则基于事实和你已知的知识来回答。
+请回答用户问题，优先基于Context内容来回答，如果Context为空或者无匹配，则基于事实和你已知的知识来回答，回答结果以markdown格式返回。
 Question: 
 %s
 

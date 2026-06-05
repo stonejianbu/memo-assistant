@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>记忆助手</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked@11.1.1/marked.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .card h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        textarea, input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            font-family: inherit;
+            transition: border-color 0.3s;
+        }
+
+        textarea:focus, input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .result-container {
+            margin-top: 20px;
+            border-radius: 8px;
+            overflow: hidden;
+            display: none;
+        }
+
+        .result-container.show {
+            display: block;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .result-header {
+            padding: 12px 15px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            user-select: none;
+            transition: background-color 0.2s;
+        }
+
+        .result-header:hover {
+            opacity: 0.9;
+        }
+
+        .result-header.success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+
+        .result-header.error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+
+        .result-title {
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .toggle-icon {
+            transition: transform 0.3s;
+            font-size: 12px;
+        }
+
+        .toggle-icon.collapsed {
+            transform: rotate(-90deg);
+        }
+
+        .result-content {
+            padding: 15px;
+            border: 1px solid #e0e0e0;
+            border-top: none;
+            background-color: #f8f9fa;
+            line-height: 1.6;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .result-content.collapsed {
+            display: none;
+        }
+
+        .markdown-content {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            color: #333;
+        }
+
+        .markdown-content h1,
+        .markdown-content h2,
+        .markdown-content h3,
+        .markdown-content h4,
+        .markdown-content h5,
+        .markdown-content h6 {
+            margin-top: 16px;
+            margin-bottom: 8px;
+            font-weight: 600;
+            line-height: 1.25;
+            color: #667eea;
+        }
+
+        .markdown-content h1 {
+            font-size: 1.8em;
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 8px;
+        }
+
+        .markdown-content h2 {
+            font-size: 1.5em;
+            border-bottom: 1px solid #e0e0e0;
+            padding-bottom: 6px;
+        }
+
+        .markdown-content h3 {
+            font-size: 1.25em;
+        }
+
+        .markdown-content p {
+            margin-bottom: 12px;
+        }
+
+        .markdown-content ul,
+        .markdown-content ol {
+            margin-bottom: 12px;
+            padding-left: 24px;
+        }
+
+        .markdown-content li {
+            margin-bottom: 6px;
+        }
+
+        .markdown-content code {
+            background-color: #f1f3f4;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9em;
+            color: #d63384;
+        }
+
+        .markdown-content pre {
+            background-color: #282c34;
+            color: #abb2bf;
+            padding: 12px;
+            border-radius: 6px;
+            overflow-x: auto;
+            margin-bottom: 12px;
+        }
+
+        .markdown-content pre code {
+            background-color: transparent;
+            padding: 0;
+            color: inherit;
+            font-size: 0.9em;
+        }
+
+        .markdown-content blockquote {
+            border-left: 4px solid #667eea;
+            padding-left: 12px;
+            margin-left: 0;
+            margin-bottom: 12px;
+            color: #666;
+            font-style: italic;
+        }
+
+        .markdown-content a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        .markdown-content a:hover {
+            text-decoration: underline;
+        }
+
+        .markdown-content table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-bottom: 12px;
+        }
+
+        .markdown-content th,
+        .markdown-content td {
+            border: 1px solid #e0e0e0;
+            padding: 8px;
+            text-align: left;
+        }
+
+        .markdown-content th {
+            background-color: #f1f3f4;
+            font-weight: 600;
+        }
+
+        .markdown-content img {
+            max-width: 100%;
+            height: auto;
+        }
+
+        .markdown-content hr {
+            border: none;
+            border-top: 2px solid #e0e0e0;
+            margin: 16px 0;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+            margin-left: 10px;
+            vertical-align: middle;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .api-config {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .api-config input {
+            margin-bottom: 10px;
+        }
+
+        .api-config label {
+            font-size: 14px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧠 记忆助手</h1>
+
+        <div class="card">
+            <h2>⚙️ API配置</h2>
+            <div class="api-config">
+                <div class="input-group">
+                    <label for="apiBaseUrl">API地址</label>
+                    <input type="text" id="apiBaseUrl" value="http://127.0.0.1:9000" placeholder="http://127.0.0.1:9000">
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>📝 训练记忆</h2>
+            <div class="input-group">
+                <label for="trainInput">输入训练内容</label>
+                <textarea id="trainInput" placeholder="例如：我是你的主人，以后叫我石头"></textarea>
+            </div>
+            <button id="trainBtn" onclick="trainMemory()">
+                <span id="trainBtnText">开始训练</span>
+            </button>
+            <div id="trainResult" class="result-container"></div>
+        </div>
+
+        <div class="card">
+            <h2>🔍 搜索记忆</h2>
+            <div class="input-group">
+                <label for="searchInput">输入搜索问题</label>
+                <input type="text" id="searchInput" placeholder="例如：谁是你的主人">
+            </div>
+            <button id="searchBtn" onclick="searchMemory()">
+                <span id="searchBtnText">搜索</span>
+            </button>
+            <div id="searchResult" class="result-container"></div>
+        </div>
+    </div>
+
+    <script>
+        function getApiBaseUrl() {
+            return document.getElementById('apiBaseUrl').value.trim() || 'http://127.0.0.1:9000';
+        }
+
+        function showResult(elementId, title, content, isSuccess, isMarkdown = false) {
+            const resultDiv = document.getElementById(elementId);
+            const headerClass = isSuccess ? 'success' : 'error';
+            const icon = isSuccess ? '✅' : '❌';
+
+            let displayContent = content;
+            if (isMarkdown && isSuccess) {
+                displayContent = marked.parse(content);
+            }
+
+            const contentClass = isMarkdown && isSuccess ? 'markdown-content' : '';
+
+            resultDiv.innerHTML = `
+                <div class="result-header ${headerClass}" onclick="toggleResult('${elementId}')">
+                    <div class="result-title">
+                        <span>${icon}</span>
+                        <span>${title}</span>
+                    </div>
+                    <span class="toggle-icon">▼</span>
+                </div>
+                <div class="result-content">
+                    <div class="${contentClass}">${displayContent}</div>
+                </div>
+            `;
+
+            resultDiv.className = 'result-container show';
+        }
+
+        function toggleResult(elementId) {
+            const resultDiv = document.getElementById(elementId);
+            const content = resultDiv.querySelector('.result-content');
+            const icon = resultDiv.querySelector('.toggle-icon');
+
+            if (content && icon) {
+                content.classList.toggle('collapsed');
+                icon.classList.toggle('collapsed');
+            }
+        }
+
+        function setLoading(btnId, btnTextId, isLoading) {
+            const btn = document.getElementById(btnId);
+            const btnText = document.getElementById(btnTextId);
+
+            if (isLoading) {
+                btn.disabled = true;
+                btnText.innerHTML = btnText.textContent + '<span class="loading"></span>';
+            } else {
+                btn.disabled = false;
+                const loadingSpan = btnText.querySelector('.loading');
+                if (loadingSpan) {
+                    loadingSpan.remove();
+                }
+            }
+        }
+
+        async function trainMemory() {
+            const input = document.getElementById('trainInput').value.trim();
+
+            if (!input) {
+                showResult('trainResult', '训练失败', '请输入训练内容', false);
+                return;
+            }
+
+            setLoading('trainBtn', 'trainBtnText', true);
+
+            try {
+                const response = await fetch(`${getApiBaseUrl()}/api/v1/train`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        input: [input]
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.code === 200) {
+                    showResult('trainResult', '训练成功', '记忆已成功保存到知识库', true);
+                    document.getElementById('trainInput').value = '';
+                } else {
+                    showResult('trainResult', '训练失败', data.message || '未知错误', false);
+                }
+            } catch (error) {
+                showResult('trainResult', '请求失败', `网络错误：${error.message}`, false);
+            } finally {
+                setLoading('trainBtn', 'trainBtnText', false);
+            }
+        }
+
+        async function searchMemory() {
+            const prompt = document.getElementById('searchInput').value.trim();
+
+            if (!prompt) {
+                showResult('searchResult', '搜索失败', '请输入搜索问题', false);
+                return;
+            }
+
+            setLoading('searchBtn', 'searchBtnText', true);
+
+            try {
+                const response = await fetch(`${getApiBaseUrl()}/api/v1/generate`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        prompt: prompt
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.code === 200) {
+                    let answerContent = '暂无内容';
+
+                    try {
+                        const parsedData = JSON.parse(data.data);
+                        answerContent = parsedData.answer || '暂无回答';
+                    } catch (e) {
+                        answerContent = data.data || '数据格式异常';
+                    }
+
+                    showResult('searchResult', '搜索结果', answerContent, true, true);
+                } else {
+                    showResult('searchResult', '搜索失败', data.message || '未知错误', false, false);
+                }
+            } catch (error) {
+                showResult('searchResult', '请求失败', `网络错误：${error.message}`, false);
+            } finally {
+                setLoading('searchBtn', 'searchBtnText', false);
+            }
+        }
+
+        document.getElementById('trainInput').addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 'Enter') {
+                trainMemory();
+            }
+        });
+
+        document.getElementById('searchInput').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                searchMemory();
+            }
+        });
+    </script>
+</body>
+</html>

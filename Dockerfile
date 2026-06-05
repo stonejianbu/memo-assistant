@@ -1,5 +1,5 @@
 # Build Stage
-FROM golang:1.24.3 AS build-stage
+FROM golang:1.25 AS build-stage
 
 ADD . /src/server
 WORKDIR /src/server

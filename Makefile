@@ -10,6 +10,15 @@ IMAGE_NAME := "stonejianbu/${BIN_NAME}"
 run:
 	go run main.go
 
+up:
+	docker compose up -d
+
+down:
+	docker compose down
+
+restart:
+	docker compose restart
+
 .PHONY: build
 build:
 	@echo "building ${BIN_NAME} ${VERSION}"
